@@ -6,7 +6,7 @@ import * as AWS  from 'aws-sdk'
 import * as uuid from 'uuid'
 import { createTodo } from '../../business/todo'
 
-const logger = createLogger('auth')
+const logger = createLogger('createTodo')
 const docClient = new AWS.DynamoDB.DocumentClient()
 const todosTable = process.env.TODOS_TABLE
 
@@ -17,10 +17,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   logger.info('Processing event: ', event)
   const itemId = uuid.v4()
+  const subject = event.requestContext.authorizer.principalId
 
   const newItem = {
     todoId: itemId,
     createdAt: (new Date()).toISOString(),
+    jwtsub: subject,
     ...newTodo
   }
 

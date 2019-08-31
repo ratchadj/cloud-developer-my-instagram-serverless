@@ -5,11 +5,11 @@ import { UpdateItemOutput, DeleteItemOutput } from 'aws-sdk/clients/dynamodb';
 
 const todoItemAccess = new TodoItemAccess()
 
-export async function getAllTodos(): Promise<TodoItem[]>{
-    return todoItemAccess.getAllTodos(); 
+export async function getAllTodos(subject): Promise<TodoItem[]>{
+    return todoItemAccess.getAllTodos(subject); 
 }
 
-export async function updateTodo(todoId:string, updatedTodo:UpdateTodoRequest): Promise<UpdateItemOutput[]>{
+export async function updateTodo(todoId, updatedTodo:UpdateTodoRequest): Promise<UpdateItemOutput[]>{
     return todoItemAccess.updateTodo(todoId, updatedTodo); 
 }
 

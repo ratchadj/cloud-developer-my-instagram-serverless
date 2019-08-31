@@ -16,11 +16,17 @@ export class TodoItemAccess {
         private readonly logger = createLogger('todo')){
     }
 
-    async getAllTodos(): Promise<TodoItem[]> {
+    async getAllTodos(subject): Promise<TodoItem[]> {
         this.logger.info('getAllTodos: ')
         
-        const result = await this.docClient.scan({
-            TableName: this.todoTable
+        const result = await this.docClient.query({
+            TableName: this.todoTable,
+            IndexName: "jwtsub",
+            KeyConditionExpression: "jwtsub = :subject",
+            ExpressionAttributeValues: {
+                ":subject": subject
+            },
+            ScanIndexForward: false
         }).promise()
 
         const items = result.Items
@@ -28,7 +34,7 @@ export class TodoItemAccess {
         return items as TodoItem[]
     }
 
-    async updateTodo(todoId:string, updatedTodo:UpdateTodoRequest): Promise<UpdateItemOutput[]>{
+    async updateTodo(todoId, updatedTodo:UpdateTodoRequest): Promise<UpdateItemOutput[]>{
         this.logger.info('updateTodo: ')
 
         const result = await this.docClient.update({
