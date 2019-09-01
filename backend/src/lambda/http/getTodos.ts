@@ -9,6 +9,7 @@ const XAWS = AWSXRay.captureAWS(AWS)
 const logger = createLogger('getTodos')
 const docClient = new XAWS.DynamoDB.DocumentClient()
 const todosTable = process.env.TODOS_TABLE
+const imagesTable = process.env.IMAGES_TABLE
 
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -16,6 +17,24 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   logger.info('Processing event: ', event)
   const subject = event.requestContext.authorizer.principalId
   const items = await getAllTodos(subject)
+
+  await Promise.all(items.map(async (item) => {
+    logger.info('Processing item: ', {item: item})
+    const result = await docClient.query({
+        TableName: imagesTable,
+        KeyConditionExpression: "todoId = :id",
+        Limit: 1,
+        ScanIndexForward: false,
+        ExpressionAttributeValues: {
+            ":id": item.todoId
+        }
+    }).promise()
+
+    logger.info('Processing result image: ', {result: result})
+    if(result.Count > 0){
+      item.attachmentUrl = result.Items[0].imageUrl
+    }
+  }));
   
   logger.info('Processing result: ', {result: items})
 
